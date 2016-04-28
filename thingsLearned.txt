@@ -1,0 +1,3 @@
+things learned:
+
+you can't use both pack and grid layout managers. it's one or the other.
