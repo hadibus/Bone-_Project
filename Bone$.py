@@ -1,4 +1,5 @@
 from Tkinter import *
+import tkFileDialog as filedialog
 import ttk
 
 class Bones:
@@ -8,22 +9,25 @@ class Bones:
             #get images for add and remove buttons
         self.plusImage = PhotoImage(file='plus50.gif')
         self.minusImage = PhotoImage(file='minus50.gif')
-        bitmap = PhotoImage(file='greenBoneIcon.gif')
+        self.bitmap = PhotoImage(file='greenBoneIcon.gif')
 
         ###init window###
         master.title("Bone$")
-        master.tk.call('wm', 'iconphoto', master._w, bitmap)
+        master.tk.call('wm', 'iconphoto', master._w, self.bitmap)
 
         ###Step 1. Initialize all the contents###
         #init the menu
         menuBar = Menu(master)
+        fileMenu = Menu(menuBar, tearoff=0 )
+        fileMenu.add_command( label='Save', command=self.file_save )
+        fileMenu.add_command( label='Open')
+        fileMenu.add_command( label='Exit', command=master.destroy )
+        menuBar.add_cascade( label='File', menu=fileMenu)
+
         helpMenu = Menu(menuBar, tearoff=0 )
         helpMenu.add_command( label='About', command=self.showAboutWindow )
+        helpMenu.add_command( label='Explaination', command=self.showExplainationWindow )
         menuBar.add_cascade( label='Help', menu=helpMenu)
-        #init the frames
-        assetFrame = Frame(master)
-        liabilityFrame = Frame(master)
-        reportFrame = Frame(master)
 
         #init the labels
 
@@ -50,16 +54,16 @@ class Bones:
         exportAsLabel = Label(master, text='export as')
 
         #init the scrollbars
-        aScroll = Scrollbar(assetFrame)
-        lScroll = Scrollbar(liabilityFrame)
-        rScroll = Scrollbar(reportFrame)
+        aScroll = Scrollbar(master)
+        lScroll = Scrollbar(master)
+        rScroll = Scrollbar(master)
 
         #init the listBoxes
-        self.albox = Listbox(assetFrame, yscrollcommand=aScroll.set, width=30 )
-        self.llbox = Listbox(liabilityFrame, yscrollcommand=lScroll.set, width=30)
+        self.albox = Listbox(master, yscrollcommand=aScroll.set, width=30, height=13 )
+        self.llbox = Listbox(master, yscrollcommand=lScroll.set, width=30, height=13 )
 
         #init the report text
-        self.reportText = Text(reportFrame, yscrollcommand=rScroll.set, width=40, height=15 )
+        self.reportText = Text(master, yscrollcommand=rScroll.set, width=40, height=15 )
 
         #init the buttons
 
@@ -126,41 +130,39 @@ class Bones:
         remLiabBtn.grid( row=11, column=1 )
 
             #column=2. frames containing asset/liability list & scrollbars
-        assetFrame.grid( row=0, column=2, rowspan=6 )
-        aScroll.pack( side=RIGHT, fill=Y )
-        self.albox.pack( side=LEFT, fill=BOTH )
-        liabilityFrame.grid( row=6, column=2, rowspan=6 )
-        lScroll.pack( side=RIGHT, fill=Y )
-        self.llbox.pack( side=RIGHT )
+        self.albox.grid( row=0, column=2, rowspan=5 )
+        self.llbox.grid( row=6, column=2, rowspan=5 )
 
-            #column=3. labels, reportFrame
-        reportLabel.grid( row=0, column=3, columnspan=5)
-        nameLabel.grid( row=1, column=3, sticky=E )
-        rYearsLabel.grid( row=2, column=3, sticky=E )
-        reportFrame.grid( row=3, column=3, columnspan=6, rowspan=7)
-        #rScroll.grid( row=0, column=1 )
-        rScroll.pack( side=RIGHT, fill=Y )
-        #self.reportText.grid( row=0 )
-        self.reportText.pack( side=RIGHT )
-        exportAsLabel.grid( row=10, column=3 )
-        self.exportEntry.grid(row=11, column=3, columnspan=3)
+            #column=3 scrollbars
+        aScroll.grid( row=0, column=3, rowspan=5, sticky=NS )
+        lScroll.grid( row=6, column=3, rowspan=5, sticky=NS ) ##INCR all cols from here
 
-            #column=4. two entries
-        self.nameEntry.grid( row=1, column=4, columnspan=3 )
-        self.yearsEntry.grid( row=2, column=4 )
+            #column=4. reportLabel, nameLabel, yearsLabel, reportText
+            #exportAsLabel, exportEntry
+        reportLabel.grid( row=0, column=4, columnspan=5)
+        nameLabel.grid( row=1, column=4, sticky=E )
+        rYearsLabel.grid( row=2, column=4, sticky=E )
+        self.reportText.grid( row=3, column=4, columnspan=5, rowspan=7 )
+        exportAsLabel.grid( row=10, column=4 )
+        self.exportEntry.grid(row=11, column=4, columnspan=3)
 
-            #column=5.
-        rMonthsLabel.grid( row=2, column=5, sticky=E )
+            #column=5. two entries
+        self.nameEntry.grid( row=1, column=5, columnspan=3, sticky=W )
+        self.yearsEntry.grid( row=2, column=5, sticky=W )
 
-            #column=6. months combobox and export button
-        self.monthsCombo.grid( row=2, column=6 )
-        exportBtn.grid( row=11, column=6, columnspan=3 )
+            #column=6.
+        rMonthsLabel.grid( row=2, column=6, sticky=E )
 
-            #column=7
-        rDaysLabel.grid( row=2, column=7, sticky=E )
+            #column=7. months combobox and export button
+        self.monthsCombo.grid( row=2, column=7, sticky=W )
+        exportBtn.grid( row=11, column=7, columnspan=3 )
 
             #column=8
-        self.daysCombo.grid( row=2, column=8 )
+        rDaysLabel.grid( row=2, column=8, sticky=E )
+
+            #column=9
+        self.daysCombo.grid( row=2, column=9, sticky=W )
+        rScroll.grid( row=3, column=9, rowspan=7, sticky=NS )
 
 
 
@@ -253,11 +255,62 @@ class Bones:
 
     def showAboutWindow(self):
         top = Toplevel()
+        top.tk.call('wm', 'iconphoto', top._w, self.bitmap)
+        words = 'Written by Christopher Jenkins.\n'
+        words += 'Inspiration from Rich Dad Poor Dad\n'
+        words += 'by Robert Kiyosaki.'
+        msg = Message(top, text=words )
+        okbtn = Button(top, text='OK', command=top.destroy )
 
-
+        msg.pack()
+        okbtn.pack()
 
         top.mainloop()
         top.destroy()
+
+    def showExplainationWindow(self):
+        top = Toplevel()
+        top.tk.call('wm', 'iconphoto', top._w, self.bitmap)
+        words = 'Bone$ is a budgeting application.  An asset is anything '
+        words += 'that puts bones in your pocket, while a liabilitiy is '
+        words += 'anything that takes bones out of your pocket.  An example of '
+        words += 'an asset would be a paycheck(net) or a monthly allowance, while '
+        words += 'an example of a liability would be money spent on gas, food, '
+        words += 'a phone bill, or the internet bill.\n\n'
+        words += 'A job is not usually thought of as an asset, but for the '
+        words += 'purposes of this program this is ignored.\n\n'
+        words += 'Click the update button to create your report.  Good luck '
+        words += 'filling up the assets list. There\'s a lot of room there!'
+        msg = Message(top, text=words )
+        okbtn = Button(top, text='OK', command=top.destroy )
+
+        msg.pack()
+        okbtn.pack()
+
+        top.mainloop()
+        top.destroy()
+
+    def file_save(self):
+        #top.f = filedialog.asksavefile( filetypes =((".txt files", "*.txt"), ("All files", "*.*")))
+        f = filedialog.asksaveasfile( filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
+        if f is None: return
+
+        text2save = ''
+        for line in self.albox.get( 0, END ):
+            print line
+            text2save += line + '\n'
+
+        text2save += '\n' #empty line signifies end of assets
+
+        text2save += 'l\n'
+        for line in self.llbox.get( 0, END ):
+            print line
+            text2save += line + '\n'
+
+        text2save += '\n' #empty line signifies end of liabilities
+
+        f.write(text2save)
+        f.close()
 
 root = Tk()
 
