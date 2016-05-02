@@ -7,9 +7,9 @@ class Bones:
     def __init__(self, master):
         ###get images###
             #get images for add and remove buttons
-        self.plusImage = PhotoImage(file='plus50.gif')
-        self.minusImage = PhotoImage(file='minus50.gif')
-        self.bitmap = PhotoImage(file='greenBoneIcon.gif')
+        self.plusImage = PhotoImage(file='data/plus50.gif')
+        self.minusImage = PhotoImage(file='data/minus50.gif')
+        self.bitmap = PhotoImage(file='data/greenBoneIcon.gif')
 
         ###init window###
         master.title("Bone$")
@@ -20,7 +20,8 @@ class Bones:
         menuBar = Menu(master)
         fileMenu = Menu(menuBar, tearoff=0 )
         fileMenu.add_command( label='Save', command=self.file_save )
-        fileMenu.add_command( label='Open')
+        fileMenu.add_command( label='Open', command=self.file_open )
+        fileMenu.add_command( label='Export', command=self.exportReport )
         fileMenu.add_command( label='Exit', command=master.destroy )
         menuBar.add_cascade( label='File', menu=fileMenu)
 
@@ -51,7 +52,6 @@ class Bones:
         rMonthsLabel = Label(master, text='months')
         rDaysLabel = Label(master, text='days')
 
-        exportAsLabel = Label(master, text='export as')
 
         #init the scrollbars
         aScroll = Scrollbar(master)
@@ -63,7 +63,7 @@ class Bones:
         self.llbox = Listbox(master, yscrollcommand=lScroll.set, width=30, height=13 )
 
         #init the report text
-        self.reportText = Text(master, yscrollcommand=rScroll.set, width=40, height=15 )
+        self.reportText = Text(master, yscrollcommand=rScroll.set, width=40, height=19 )
 
         #init the buttons
 
@@ -72,7 +72,7 @@ class Bones:
         remAssetBtn = Button(master, image=self.minusImage, command=self.removeAsset )
         addLiabBtn = Button(master, image=self.plusImage, command=self.addLiability )
         remLiabBtn = Button(master, image=self.minusImage, command=self.removeLiability )
-        exportBtn = Button(master, text='Export', font=("Helvetica", 14), command=self.updateReport)
+        updateBtn = Button(master, text='Update', font=("Helvetica", 14), command=self.updateReport)
 
         #init the entries
         self.aDescEntry = Entry(master)
@@ -83,7 +83,6 @@ class Bones:
 
         self.yearsEntry = Entry(master, width=6)
 
-        self.exportEntry = Entry(master)
         self.nameEntry = Entry(master)
 
         #init the Comboboxes.  These are dropdowns
@@ -96,6 +95,7 @@ class Bones:
         self.monthsCombo.current(0)
         self.daysCombo.current(0)
         self.yearsEntry.insert(0, '1')
+        self.reportText.insert(INSERT, 'Press Update to make report')
         self.reportText.config( state='disabled' )
         master.config( menu=menuBar )
         self.reportText.config( font="Times")
@@ -142,9 +142,7 @@ class Bones:
         reportLabel.grid( row=0, column=4, columnspan=5)
         nameLabel.grid( row=1, column=4, sticky=E )
         rYearsLabel.grid( row=2, column=4, sticky=E )
-        self.reportText.grid( row=3, column=4, columnspan=5, rowspan=7 )
-        exportAsLabel.grid( row=10, column=4 )
-        self.exportEntry.grid(row=11, column=4, columnspan=3)
+        self.reportText.grid( row=3, column=4, columnspan=5, rowspan=9 )
 
             #column=5. two entries
         self.nameEntry.grid( row=1, column=5, columnspan=3, sticky=W )
@@ -155,14 +153,14 @@ class Bones:
 
             #column=7. months combobox and export button
         self.monthsCombo.grid( row=2, column=7, sticky=W )
-        exportBtn.grid( row=11, column=7, columnspan=3 )
 
             #column=8
+        updateBtn.grid( row=1, column=8, columnspan=2 )
         rDaysLabel.grid( row=2, column=8, sticky=E )
 
             #column=9
         self.daysCombo.grid( row=2, column=9, sticky=W )
-        rScroll.grid( row=3, column=9, rowspan=7, sticky=NS )
+        rScroll.grid( row=3, column=9, rowspan=9, sticky=NS )
 
 
 
@@ -241,7 +239,6 @@ class Bones:
         rs += str(self.getMoneyWithTime(totalDaily-liabTotalDaily, years, months, days))
         rs += '\n\n Thank you, come again!'
 
-        print rs
         self.reportText.config( state='normal' )
         self.reportText.delete(1.0, END)
         self.reportText.insert(INSERT, rs)
@@ -279,6 +276,10 @@ class Bones:
         words += 'a phone bill, or the internet bill.\n\n'
         words += 'A job is not usually thought of as an asset, but for the '
         words += 'purposes of this program this is ignored.\n\n'
+        words += 'For calculations, a year has 365.25 days and a month has '
+        words += '30.44 days on average.  This will not produce perfect '
+        words += 'calculations for every situation, but for longer times it '
+        words += 'more accurate.\n\n'
         words += 'Click the update button to create your report.  Good luck '
         words += 'filling up the assets list. There\'s a lot of room there!'
         msg = Message(top, text=words )
@@ -292,25 +293,64 @@ class Bones:
 
     def file_save(self):
         #top.f = filedialog.asksavefile( filetypes =((".txt files", "*.txt"), ("All files", "*.*")))
-        f = filedialog.asksaveasfile( filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
+        f = filedialog.asksaveasfile( defaultextension=".bon", filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
         if f is None: return
 
         text2save = ''
+        text2save += self.nameEntry.get() + '\n'
         for line in self.albox.get( 0, END ):
-            print line
             text2save += line + '\n'
 
-        text2save += '\n' #empty line signifies end of assets
+        text2save += '<jksd8y9uh8yhjgidf7>\n' #signifies end of assets
 
-        text2save += 'l\n'
         for line in self.llbox.get( 0, END ):
-            print line
             text2save += line + '\n'
 
-        text2save += '\n' #empty line signifies end of liabilities
+        text2save += '<98a98fja489h7wf89>\n' #signifies end of liabilities
+        text2save += self.reportText.get('1.0',END)
 
         f.write(text2save)
         f.close()
+
+    def file_open(self):
+        f = filedialog.askopenfile( filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
+        if f is None: return
+
+        passedEndAssets = False
+        passedEndLiabs = False
+
+        self.nameEntry.delete(0, END)  # delete the current name
+        self.nameEntry.insert(0, f.readline() ) # insert new name from file
+
+        self.albox.delete(0, END) #delete asset box contents
+        self.llbox.delete(0, END) #delete liability box contents
+
+        self.reportText.config( state='normal' ) #enable changes for text
+        self.reportText.delete( '1.0', END ) #delete text
+
+        for line in f:
+            if line == '<jksd8y9uh8yhjgidf7>\n':
+                passedEndAssets = True
+                continue
+            if line == '<98a98fja489h7wf89>\n':
+                passedEndLiabs = True
+                continue
+            if passedEndLiabs: #in reportText
+                self.reportText.insert( END, line )
+            elif passedEndAssets and line != '\n': #in liabs
+                line = line.rstrip()
+                self.llbox.insert( END, line )
+            elif line != '\n': #in assets
+                line = line.rstrip()
+                self.albox.insert( END, line )
+        self.reportText.config( state='disabled' ) #diable text changes
+
+    def exportReport(self):
+        f = filedialog.asksaveasfile( defaultextension=".txt", filetypes =((".txt files", "*.txt"), ("All files", "*.*")))
+        if f is None: return
+        f.write(self.reportText.get('1.0', END))
+        f.close()
+
 
 root = Tk()
 
