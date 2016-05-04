@@ -1,6 +1,0 @@
-things learned:
-
-you can't use both pack and grid layout managers in the same space.
-It is okay to use grid layout inside a frame, and then use pack
-layout to place that frame inside the main window because these are
-not in the same space.

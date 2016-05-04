@@ -1,8 +1,3 @@
-Rick
-MONEYS, $550.00, weekly
-<jksd8y9uh8yhjgidf7>
-FOODS, $50.00, weekly
-<98a98fja489h7wf89>
 Bone$ Report - Rick
 
 Duration: 1 years, 0 months, and 0 days.
@@ -18,3 +13,4 @@ Total Liabilities: $2608.93
 - Liabilities
 _______________
  $26089.29
+

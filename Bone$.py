@@ -2,21 +2,22 @@ from Tkinter import *
 import tkFileDialog as filedialog
 import ttk
 
+#contains all of the gui components and functionality
 class Bones:
 
     def __init__(self, master):
-        ###get images###
+        ###Step 1. get images###
             #get images for add and remove buttons
         self.plusImage = PhotoImage(file='data/plus50.gif')
         self.minusImage = PhotoImage(file='data/minus50.gif')
         self.bitmap = PhotoImage(file='data/greenBoneIcon.gif')
 
-        ###init window###
+        ###Step 2. init window###
         master.title("Bone$")
         master.tk.call('wm', 'iconphoto', master._w, self.bitmap)
 
-        ###Step 1. Initialize all the contents###
-        #init the menu
+        ###Step 3. Initialize all the widgets###
+            #init the menu
         menuBar = Menu(master)
         fileMenu = Menu(menuBar, tearoff=0 )
         fileMenu.add_command( label='Save', command=self.file_save )
@@ -30,8 +31,7 @@ class Bones:
         helpMenu.add_command( label='Explaination', command=self.showExplainationWindow )
         menuBar.add_cascade( label='Help', menu=helpMenu)
 
-        #init the labels
-
+            #init the labels
         assetLabel = Label(master, text='ASSETS', font=('Helvetica', 16))
         aAddLabel = Label(master, text='add')
         aDescLabel = Label(master, text='description')
@@ -53,28 +53,26 @@ class Bones:
         rDaysLabel = Label(master, text='days')
 
 
-        #init the scrollbars
+            #init the scrollbars
         aScroll = Scrollbar(master)
         lScroll = Scrollbar(master)
         rScroll = Scrollbar(master)
 
-        #init the listBoxes
+            #init the listBoxes
         self.albox = Listbox(master, yscrollcommand=aScroll.set, width=30, height=13 )
         self.llbox = Listbox(master, yscrollcommand=lScroll.set, width=30, height=13 )
 
-        #init the report text
+            #init the report text
         self.reportText = Text(master, yscrollcommand=rScroll.set, width=40, height=19 )
 
-        #init the buttons
-
-            #buttons
+            #init the buttons
         addAssetBtn = Button(master, image=self.plusImage, command=self.addAsset )
         remAssetBtn = Button(master, image=self.minusImage, command=self.removeAsset )
         addLiabBtn = Button(master, image=self.plusImage, command=self.addLiability )
         remLiabBtn = Button(master, image=self.minusImage, command=self.removeLiability )
         updateBtn = Button(master, text='Update', font=("Helvetica", 14), command=self.updateReport)
 
-        #init the entries
+            #init the entries
         self.aDescEntry = Entry(master)
         self.aAmntEntry = Entry(master)
 
@@ -83,24 +81,27 @@ class Bones:
 
         self.yearsEntry = Entry(master, width=6)
 
-        self.nameEntry = Entry(master)
+        self.nameEntry = Entry(master, width=30)
 
-        #init the Comboboxes.  These are dropdowns
+            #init the Comboboxes.  These are dropdowns
         self.aTimeCombo = ttk.Combobox(master, state='readonly', width=8, values=['yearly', 'monthly', 'weekly'])
         self.lTimeCombo = ttk.Combobox(master, state='readonly', width=8, values=['yearly', 'monthly', 'weekly'])
         self.monthsCombo = ttk.Combobox(master, state='readonly', width=4, values=range(0,12))
         self.daysCombo = ttk.Combobox(master, state='readonly', width=4, values=range(0,31))
 
-        ###Step?. Configure widgets###
+        ###Step 4. Configure widgets###
         self.monthsCombo.current(0)
         self.daysCombo.current(0)
         self.yearsEntry.insert(0, '1')
         self.reportText.insert(INSERT, 'Press Update to make report')
         self.reportText.config( state='disabled' )
         master.config( menu=menuBar )
-        self.reportText.config( font="Times")
+        self.reportText.config( font="Helvetica")
+        aScroll.config( command=self.albox.yview )
+        lScroll.config( command=self.llbox.yview )
+        rScroll.config( command=self.reportText.yview )
 
-        ###Step2. Place all of the widgets by columns###
+        ###Step 5. Place all of the widgets by columns###
             #column=0. all labels
         assetLabel.grid( row=0, columnspan=2 )
         aAddLabel.grid( row=1, sticky=E )
@@ -163,7 +164,7 @@ class Bones:
         rScroll.grid( row=3, column=9, rowspan=9, sticky=NS )
 
 
-
+    #adds a new asset to asset list box
     def addAsset(self):
         desc = self.aDescEntry.get().strip()
         amount = float(self.aAmntEntry.get().strip())
@@ -173,9 +174,11 @@ class Bones:
             return #not valid entries.
         self.albox.insert(END, desc + ', $' + str(amount) + ', ' + tim )
 
+    #removes the selected asset from asset list box
     def removeAsset(self):
         self.albox.delete(ACTIVE)
 
+    #adds a new liability to liability list box
     def addLiability(self):
         desc = self.lDescEntry.get().strip()
         amount = float(self.lAmntEntry.get().strip())
@@ -185,9 +188,11 @@ class Bones:
             return #not valid entries.
         self.llbox.insert(END, desc + ', $' + str(amount) + ', ' + tim )
 
+    #removes the selected liability from the liability list box
     def removeLiability(self):
         self.llbox.delete(ACTIVE)
 
+    #updates the report based on contents of asset and liability list boxes
     def updateReport(self):
         #assetCalc = 0.0
         totalDaily = 0.0
@@ -197,13 +202,13 @@ class Bones:
         days = int(self.daysCombo.get())
         #make the report header
         rs = 'Bone$ Report - '
-        rs += self.nameEntry.get().strip() + '\n'
+        rs += self.nameEntry.get().strip() + '\n\n'
         rs += 'Duration: ' + str(years) + ' years, ' + str(months)
         rs += ' months, and ' + str(days) + ' days.\n'
         rs += '=====ASSETS=====\n'
         #make each asset entry
         for asset in self.albox.get( 0, END ):
-            rs += asset + ': ' #description, $, time:
+            rs += asset + ' => ' #description, $, time:
             splitLine = asset.split(', ')
             daily = float(splitLine[1][1:])
             if splitLine[2] == 'weekly':
@@ -221,7 +226,7 @@ class Bones:
         rs += '\n=====LIABILITIES=====\n'
         #make each liability entry
         for liab in self.llbox.get( 0, END ):
-            rs += liab + ': ' #description, $, time:
+            rs += liab + ' => ' #description, $, time:
             splitLine = liab.split(', ')
             daily = float(splitLine[1][1:])
             if splitLine[2] == 'weekly':
@@ -237,24 +242,25 @@ class Bones:
         rs += 'Total Liabilities: $' + str(liabTotal) + '\n'
         rs += '\n  Assets\n- Liabilities\n_______________\n $'
         rs += str(self.getMoneyWithTime(totalDaily-liabTotalDaily, years, months, days))
-        rs += '\n\n Thank you, come again!'
 
         self.reportText.config( state='normal' )
         self.reportText.delete(1.0, END)
         self.reportText.insert(INSERT, rs)
         self.reportText.config( state='disabled' )
 
+    #gets money based on time
     def getMoneyWithTime(self, daily, years, months, days):
         calc = daily * years * 365.25
         calc += daily * months * 30.44
         calc += daily * days
         return "{0:.2f}".format(calc)
 
+    #displays the about window
     def showAboutWindow(self):
         top = Toplevel()
         top.tk.call('wm', 'iconphoto', top._w, self.bitmap)
-        words = 'Written by Christopher Jenkins.\n'
-        words += 'Inspiration from Rich Dad Poor Dad\n'
+        words = 'Written by Christopher Jenkins.  Dedicated to poor college '
+        words += 'students.  Inspiration from Rich Dad Poor Dad '
         words += 'by Robert Kiyosaki.'
         msg = Message(top, text=words )
         okbtn = Button(top, text='OK', command=top.destroy )
@@ -265,6 +271,7 @@ class Bones:
         top.mainloop()
         top.destroy()
 
+    #displays the explanation window
     def showExplainationWindow(self):
         top = Toplevel()
         top.tk.call('wm', 'iconphoto', top._w, self.bitmap)
@@ -274,6 +281,10 @@ class Bones:
         words += 'an asset would be a paycheck(net) or a monthly allowance, while '
         words += 'an example of a liability would be money spent on gas, food, '
         words += 'a phone bill, or the internet bill.\n\n'
+        words += 'Add an asset or liability by providing a description, amount, '
+        words += 'and time duration in the fields. Then press the + button.  '
+        words += 'remove an asset or liability by selecting it and pressing the '
+        words += '- button.\n\n'
         words += 'A job is not usually thought of as an asset, but for the '
         words += 'purposes of this program this is ignored.\n\n'
         words += 'For calculations, a year has 365.25 days and a month has '
@@ -281,7 +292,7 @@ class Bones:
         words += 'calculations for every situation, but for longer times it '
         words += 'more accurate.\n\n'
         words += 'Click the update button to create your report.  Good luck '
-        words += 'filling up the assets list. There\'s a lot of room there!'
+        words += 'on becoming the master of your money!'
         msg = Message(top, text=words )
         okbtn = Button(top, text='OK', command=top.destroy )
 
@@ -291,6 +302,7 @@ class Bones:
         top.mainloop()
         top.destroy()
 
+    #Saves name, listbox content, and report text content
     def file_save(self):
         #top.f = filedialog.asksavefile( filetypes =((".txt files", "*.txt"), ("All files", "*.*")))
         f = filedialog.asksaveasfile( defaultextension=".bon", filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
@@ -312,6 +324,7 @@ class Bones:
         f.write(text2save)
         f.close()
 
+    #opens a file and retrieves saved data
     def file_open(self):
         f = filedialog.askopenfile( filetypes =((".bon files", "*.bon"), ("All files", "*.*")))
         if f is None: return
@@ -320,7 +333,7 @@ class Bones:
         passedEndLiabs = False
 
         self.nameEntry.delete(0, END)  # delete the current name
-        self.nameEntry.insert(0, f.readline() ) # insert new name from file
+        self.nameEntry.insert(0, f.readline().strip() ) # insert new name from file
 
         self.albox.delete(0, END) #delete asset box contents
         self.llbox.delete(0, END) #delete liability box contents
@@ -345,6 +358,7 @@ class Bones:
                 self.albox.insert( END, line )
         self.reportText.config( state='disabled' ) #diable text changes
 
+    #exports the contents of the report text to a .txt file
     def exportReport(self):
         f = filedialog.asksaveasfile( defaultextension=".txt", filetypes =((".txt files", "*.txt"), ("All files", "*.*")))
         if f is None: return
@@ -353,8 +367,7 @@ class Bones:
 
 
 root = Tk()
-
-bones = Bones(root)
+bones = Bones(root) #invoke creation of the Bones class
 
 root.mainloop()
 root.destroy()
